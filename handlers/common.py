@@ -1,0 +1,138 @@
+import sqlite3 as sl
+import datetime
+import random
+import os, sys
+import pathlib
+from pathlib import Path
+
+from aiogram import Bot, Dispatcher, types, F, Router
+from aiogram.types import Message, ReplyKeyboardRemove, FSInputFile, File, CallbackQuery, PollOption
+from aiogram.utils.keyboard import ReplyKeyboardBuilder
+from aiogram.filters import Command, StateFilter
+from aiogram.fsm.context import FSMContext
+from aiogram.filters.state import StatesGroup, State
+from aiogram.utils.keyboard import InlineKeyboardBuilder, CallbackData
+import pathlib
+from pathlib import Path
+from transformers import Qwen2VLForConditionalGeneration, AutoTokenizer, AutoProcessor
+from qwen_vl_utils import process_vision_info
+
+router = Router()
+
+back = ReplyKeyboardBuilder()
+for item in ('Назад',):
+    back.add(types.KeyboardButton(text=item))
+back.adjust(1)
+
+# открываем файл с базой данных
+bdfile = Path(pathlib.Path.home(), 'GitHub', 'Neuro_timbot', 'neuro_timbot.db')
+
+@router.message(F.text == 'чотут')
+#@router.message(Command("start"))
+async def stat(message: types.Message, state: FSMContext, bot: Bot):
+    try:
+        # default: Load the model on the available device(s)
+        model = Qwen2VLForConditionalGeneration.from_pretrained(
+            "Qwen/Qwen2-VL-7B-Instruct", torch_dtype=torch.bfloat16, attn_implementation="flash_attention_2", device_map="auto"
+        )
+
+        # We recommend enabling flash_attention_2 for better acceleration and memory saving, especially in multi-image and video scenarios.
+        # model = Qwen2VLForConditionalGeneration.from_pretrained(
+        #     "Qwen/Qwen2-VL-7B-Instruct",
+        #     torch_dtype=torch.bfloat16,
+        #     attn_implementation="flash_attention_2",
+        #     device_map="auto",
+        # )
+
+        # default processer
+        processor = AutoProcessor.from_pretrained("Qwen/Qwen2-VL-7B-Instruct")
+
+        # The default range for the number of visual tokens per image in the model is 4-16384. You can set min_pixels and max_pixels according to your needs, such as a token count range of 256-1280, to balance speed and memory usage.
+        # min_pixels = 256*28*28
+        # max_pixels = 1280*28*28
+        # processor = AutoProcessor.from_pretrained("Qwen/Qwen2-VL-7B-Instruct", min_pixels=min_pixels, max_pixels=max_pixels)
+
+        filepath = './GitHub/Neuro_timbot/in/'
+        if not os.path.exists(filepath): 
+            os.makedirs(filepath) 
+
+        if message.photo != None:
+            #photos = message.photo
+            #for photo in photos:
+            try:
+                photo = message.photo[3]
+            except:
+                try:
+                    photo = message.photo[2]
+                except:
+                    try:
+                        photo = message.photo[1]
+                    except:
+                        photo = message.photo[0]
+            photo_file = await bot.get_file(photo.file_id)
+            photo_path = photo_file.file_path
+            await bot.download_file(photo_path, filepath + filename)
+            status = True
+        elif message.document != None:
+            doc = message.document
+            doc_file = await bot.get_file(doc.file_id)
+            doc_path = doc_file.file_path
+            ext = str(doc_path).split('.')
+            filename = filename[:-3] + ext[-1]
+            await bot.download_file(doc_path, filepath + filename)
+            #await message.answer(f'{ext[-1]}')
+            status = True
+        else:
+            print('Ащельме! На проверку прислали фиг знает что')
+            await message.answer('Что-то не то с файлом')
+            status = False
+        if status:
+            txt = "Что на изображении? распиши в формате JSON"
+            if message.text != '':
+                txt = message.text
+            messages = [
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "image",
+                            "image": filepath + filename,
+                        },
+                        {"type": "text", "text": txt},
+                    ],
+                }
+            ]
+
+            # Preparation for inference
+            text = processor.apply_chat_template(
+                messages, tokenize=False, add_generation_prompt=True
+            )
+            image_inputs, video_inputs = process_vision_info(messages)
+            inputs = processor(
+                text=[text],
+                images=image_inputs,
+                videos=video_inputs,
+                padding=True,
+                return_tensors="pt",
+            )
+            inputs = inputs.to("cuda")
+
+            # Inference: Generation of the output
+            generated_ids = model.generate(**inputs, max_new_tokens=128)
+            generated_ids_trimmed = [
+                out_ids[len(in_ids) :] for in_ids, out_ids in zip(inputs.input_ids, generated_ids)
+            ]
+            output_text = processor.batch_decode(
+                generated_ids_trimmed, skip_special_tokens=True, clean_up_tokenization_spaces=False
+            )
+            print(output_text)
+            await message.answer(txt)
+            await message.answer(output_text)
+
+    except Exception as error: 
+        await message.answer(f'{error}')
+        print(f'{error}')
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print(f'{exc_type, fname, exc_tb.tb_lineno}')
+        await message.answer(f'{exc_type, fname, exc_tb.tb_lineno}')
