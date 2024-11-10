@@ -20,6 +20,15 @@ from qwen_vl_utils import process_vision_info
 
 router = Router()
 
+def restart():
+        import sys
+        print("argv was",sys.argv)
+        print("sys.executable was", sys.executable)
+        print("restart now")
+
+        import os
+        os.execv(sys.executable, ['python'] + sys.argv)
+
 back = ReplyKeyboardBuilder()
 for item in ('Назад',):
     back.add(types.KeyboardButton(text=item))
@@ -27,6 +36,16 @@ back.adjust(1)
 
 # открываем файл с базой данных
 bdfile = Path(pathlib.Path.home(), 'GitHub', 'Neuro_timbot', 'neuro_timbot.db')
+
+@router.message(Command("r1131"))
+async def reg1(message: types.Message, state: FSMContext):
+    await message.answer('Всёпака!')
+    restart()
+
+@router.message(Command("u1131"))
+async def update1(message: types.Message, state: FSMContext):
+    os.system('/home/heural/GitHub/Neuro_timbot/update')
+    await message.answer('Go update yourself')
 
 @router.message(F.text == 'чотут')
 @router.message(F.photo)
@@ -138,3 +157,7 @@ async def stat(message: types.Message, state: FSMContext, bot: Bot):
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         print(f'{exc_type, fname, exc_tb.tb_lineno}')
         await message.answer(f'{exc_type, fname, exc_tb.tb_lineno}')
+
+
+
+              
