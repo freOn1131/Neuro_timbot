@@ -1,0 +1,8 @@
+.env
+sport.db
+/files/
+/.git/
+/handlers/__pycache__/
+*.DS_Store
+.DS_store
+*.pyc
