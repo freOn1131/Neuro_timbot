@@ -14,6 +14,7 @@ from aiogram.filters.state import StatesGroup, State
 from aiogram.utils.keyboard import InlineKeyboardBuilder, CallbackData
 import pathlib
 from pathlib import Path
+import torch
 from transformers import Qwen2VLForConditionalGeneration, AutoTokenizer, AutoProcessor
 from qwen_vl_utils import process_vision_info
 
@@ -28,6 +29,7 @@ back.adjust(1)
 bdfile = Path(pathlib.Path.home(), 'GitHub', 'Neuro_timbot', 'neuro_timbot.db')
 
 @router.message(F.text == 'чотут')
+@router.message(F.photo)
 #@router.message(Command("start"))
 async def stat(message: types.Message, state: FSMContext, bot: Bot):
     try:

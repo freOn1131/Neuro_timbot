@@ -1,0 +1,4 @@
+#!/bin/bash
+cd /home/heural/GitHub/Neuro_timbot/
+git fetch origin
+git pull
