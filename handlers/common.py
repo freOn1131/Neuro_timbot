@@ -49,6 +49,7 @@ cur.execute("""CREATE TABLE IF NOT EXISTS parameters(
 """)
 con.commit()
 
+'''
 if cur.execute('SELECT * FROM parameters WHERE param = ?', ('sys_promt',)).fetchone() != []:
     sys_promt = 'Ты большая и умная языковая модель, твоя цель - помогать и отвечать, ответ давай всегда на русском языке. \
     Что на изображении, дай отчет, ответь на русском языке'
@@ -61,7 +62,7 @@ if cur.execute('SELECT * FROM parameters WHERE param = ?', ('sys_promt',)).fetch
                 ('promt', promt, promt, ''))
     
     con.commit()
-
+'''
 
 
 #################################
@@ -170,7 +171,10 @@ async def stat(message: types.Message, state: FSMContext, bot: Bot):
             await message.answer('Что-то не то с файлом')
             status = False
         if status:
-            txt = ''
+            txt_sys = cur.execute('SELECT value FROM parameters WHERE param = ?', ('sys_promt',)).fetchone()[0]
+            txt_promt = cur.execute('SELECT value FROM parameters WHERE param = ?', ('promt',)).fetchone()[0]
+
+            txt = txt_sys + txt_promt
             
             answer = wat(filename, txt, 512)
             print(answer)
