@@ -71,6 +71,7 @@ async def stat(message: types.Message, state: FSMContext, bot: Bot):
                         photo = message.photo[0]
             photo_file = await bot.get_file(photo.file_id)
             photo_path = photo_file.file_path
+            filename = str(message.from_user.id) + '_' + str(t) + '_' + str(random.randrange(1, 1000000)) + '.jpg'
             await bot.download_file(photo_path, filepath + filename)
             status = True
         elif message.document != None:
