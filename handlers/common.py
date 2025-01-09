@@ -36,8 +36,56 @@ back.adjust(1)
 
 # default: Load the model on the available device(s)
 model = Qwen2VLForConditionalGeneration.from_pretrained(
-    "Qwen/Qwen2-VL-7B-Instruct", torch_dtype=torch.bfloat16, attn_implementation="flash_attention_2", device_map="auto"
-)
+    "Qwen/Qwen2-VL-7B-Instruct", torch_dtype=torch.bfloat16, attn_implementation="flash_attention_2", device_map="auto")
+
+
+def wat(filename, txt):
+    filepath = '~/GitHub/Neuro_timbot/in/'
+    messages = [
+        {
+            "role": "user",
+            "content": [
+                {
+                    "type": "image",
+                    "image": filepath + filename,
+                },
+                {"type": "text", "text": txt},
+            ],
+        }
+    ]
+    # default processer
+    processor = AutoProcessor.from_pretrained("Qwen/Qwen2-VL-7B-Instruct")
+
+    # The default range for the number of visual tokens per image in the model is 4-16384. 
+    # You can set min_pixels and max_pixels according to your needs, such as a token count range of 256-1280, to balance speed and memory usage.
+    # min_pixels = 256*28*28
+    # max_pixels = 1280*28*28
+    # processor = AutoProcessor.from_pretrained("Qwen/Qwen2-VL-7B-Instruct", min_pixels=min_pixels, max_pixels=max_pixels)
+
+    # Preparation for inference
+    text = processor.apply_chat_template(
+        messages, tokenize=False, add_generation_prompt=True
+    )
+    image_inputs, video_inputs = process_vision_info(messages)
+    inputs = processor(
+        text=[text],
+        images=image_inputs,
+        videos=video_inputs,
+        padding=True,
+        return_tensors="pt",
+    )
+    inputs = inputs.to("cuda")
+
+    # Inference: Generation of the output
+    generated_ids = model.generate(**inputs, max_new_tokens=128)
+    generated_ids_trimmed = [
+        out_ids[len(in_ids) :] for in_ids, out_ids in zip(inputs.input_ids, generated_ids)
+    ]
+    output_text = processor.batch_decode(
+        generated_ids_trimmed, skip_special_tokens=True, clean_up_tokenization_spaces=False
+    )
+    return output_text
+    
 
 # открываем файл с базой данных
 bdfile = Path(pathlib.Path.home(), 'GitHub', 'Neuro_timbot', 'neuro_timbot.db')
@@ -52,7 +100,6 @@ async def update1(message: types.Message, state: FSMContext):
     os.system('/home/heural/GitHub/Neuro_timbot/update')
     await message.answer('Go update yourself first! iam ok')
 
-@router.message(F.text == 'чотут')
 @router.message(F.photo)
 #@router.message(Command("start"))
 async def stat(message: types.Message, state: FSMContext, bot: Bot):
@@ -95,64 +142,13 @@ async def stat(message: types.Message, state: FSMContext, bot: Bot):
         if status:
             txt = "Ответ давай всегда на русском языке. Что на изображении, дай отчет, ответь на русском языке, нужно отвечать очень подробно, описывая все детали\
 в дальнейшем твой отчет пойдет на оценку."
-            #if message.text != '':
-            #    txt = message.text
-            messages = [
-                {
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "image",
-                            "image": filepath + filename,
-                        },
-                        {"type": "text", "text": txt},
-                    ],
-                }
-            ]
-
-            # We recommend enabling flash_attention_2 for better acceleration and memory saving, especially in multi-image and video scenarios.
-            # model = Qwen2VLForConditionalGeneration.from_pretrained(
-            #     "Qwen/Qwen2-VL-7B-Instruct",
-            #     torch_dtype=torch.bfloat16,
-            #     attn_implementation="flash_attention_2",
-            #     device_map="auto",
-            # )
-
-            # default processer
-            processor = AutoProcessor.from_pretrained("Qwen/Qwen2-VL-7B-Instruct")
-
-            # The default range for the number of visual tokens per image in the model is 4-16384. You can set min_pixels and max_pixels according to your needs, such as a token count range of 256-1280, to balance speed and memory usage.
-            # min_pixels = 256*28*28
-            # max_pixels = 1280*28*28
-            # processor = AutoProcessor.from_pretrained("Qwen/Qwen2-VL-7B-Instruct", min_pixels=min_pixels, max_pixels=max_pixels)
-
-            # Preparation for inference
-            text = processor.apply_chat_template(
-                messages, tokenize=False, add_generation_prompt=True
-            )
-            image_inputs, video_inputs = process_vision_info(messages)
-            inputs = processor(
-                text=[text],
-                images=image_inputs,
-                videos=video_inputs,
-                padding=True,
-                return_tensors="pt",
-            )
-            inputs = inputs.to("cuda")
-
-            # Inference: Generation of the output
-            generated_ids = model.generate(**inputs, max_new_tokens=128)
-            generated_ids_trimmed = [
-                out_ids[len(in_ids) :] for in_ids, out_ids in zip(inputs.input_ids, generated_ids)
-            ]
-            output_text = processor.batch_decode(
-                generated_ids_trimmed, skip_special_tokens=True, clean_up_tokenization_spaces=False
-            )
-            print(output_text)
+            
+            answer = wat(filename, txt)
+            print(answer)
             #print('txt =', type(txt))
             #print('output_text =', type(output_text))
             #await message.answer(txt)
-            await message.answer(str(output_text[0]))
+            await message.answer(str(answer[0]))
 
     except Exception as error: 
         await message.answer(f'{error}')
@@ -164,4 +160,7 @@ async def stat(message: types.Message, state: FSMContext, bot: Bot):
 
 
 
-              
+@router.message(F.text == 'Промт')
+@router.message(Command("промт"))
+async def back(message: types.Message, state: FSMContext):
+    pass

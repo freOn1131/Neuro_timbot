@@ -1,5 +1,4 @@
 .env
-sport.db
 /files/
 /.git/
 /handlers/__pycache__/
