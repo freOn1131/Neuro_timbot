@@ -89,6 +89,30 @@ def wat(filename, txt, max_new_tokens_input = 128):
 
 # открываем файл с базой данных
 bdfile = Path(pathlib.Path.home(), 'GitHub', 'Neuro_timbot', 'neuro_timbot.db')
+con = sl.connect(bdfile, check_same_thread=False)
+cur = con.cursor()
+
+cur.execute("""CREATE TABLE IF NOT EXISTS parameters(
+    id INTEGER primary key AUTOINCREMENT,
+    param TEXT,
+    value TEXT,
+    default TEXT,
+    mark TEXT);
+""")
+con.commit()
+
+if cur.execute('SELECT * FROM parametrs WHERE param = ?', ('sys_promt'),).fetchone() != []:
+    sys_promt = 'Ты большая и умная языковая модель, твоя цель - помогать и отвечать, ответ давай всегда на русском языке. \
+    Что на изображении, дай отчет, ответь на русском языке'
+
+    cur.execute('INSERT INTO parameters (param, value, default, mark) VALUES(?, ?, ?, ?)', 
+                ('sys_promt', sys_promt, sys_promt, ''))
+    
+    promt = 'нужно отвечать очень подробно, описывая все детали, в дальнейшем твой отчет пойдет на оценку.'
+    cur.execute('INSERT INTO parameters (param, value, default, mark) VALUES(?, ?, ?, ?)', 
+                ('promt', promt, promt, ''))
+    
+    con.commit()
 
 @router.message(Command("r1131"))
 async def reg1(message: types.Message, state: FSMContext):
@@ -140,8 +164,7 @@ async def stat(message: types.Message, state: FSMContext, bot: Bot):
             await message.answer('Что-то не то с файлом')
             status = False
         if status:
-            txt = "Ответ давай всегда на русском языке. Что на изображении, дай отчет, ответь на русском языке, нужно отвечать очень подробно, описывая все детали\
-в дальнейшем твой отчет пойдет на оценку."
+            txt = ''
             
             answer = wat(filename, txt, 512)
             print(answer)
