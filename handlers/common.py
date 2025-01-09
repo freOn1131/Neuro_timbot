@@ -49,7 +49,7 @@ cur.execute("""CREATE TABLE IF NOT EXISTS parameters(
 """)
 con.commit()
 
-if cur.execute('SELECT * FROM parameters WHERE param = ?', ('sys_promt'),).fetchone() != []:
+if cur.execute('SELECT * FROM parameters WHERE param = ?', ('sys_promt',)).fetchone() != []:
     sys_promt = 'Ты большая и умная языковая модель, твоя цель - помогать и отвечать, ответ давай всегда на русском языке. \
     Что на изображении, дай отчет, ответь на русском языке'
 
