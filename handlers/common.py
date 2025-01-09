@@ -34,6 +34,11 @@ for item in ('Назад',):
     back.add(types.KeyboardButton(text=item))
 back.adjust(1)
 
+# default: Load the model on the available device(s)
+model = Qwen2VLForConditionalGeneration.from_pretrained(
+    "Qwen/Qwen2-VL-7B-Instruct", torch_dtype=torch.bfloat16, attn_implementation="flash_attention_2", device_map="auto"
+)
+
 # открываем файл с базой данных
 bdfile = Path(pathlib.Path.home(), 'GitHub', 'Neuro_timbot', 'neuro_timbot.db')
 
@@ -90,8 +95,8 @@ async def stat(message: types.Message, state: FSMContext, bot: Bot):
         if status:
             txt = "Ответ давай всегда на русском языке. Что на изображении, дай отчет, ответь на русском языке, нужно отвечать очень подробно, описывая все детали\
 в дальнейшем твой отчет пойдет на оценку."
-            if message.text != '':
-                txt = message.text
+            #if message.text != '':
+            #    txt = message.text
             messages = [
                 {
                     "role": "user",
@@ -104,11 +109,6 @@ async def stat(message: types.Message, state: FSMContext, bot: Bot):
                     ],
                 }
             ]
-
-                # default: Load the model on the available device(s)
-            model = Qwen2VLForConditionalGeneration.from_pretrained(
-                "Qwen/Qwen2-VL-7B-Instruct", torch_dtype=torch.bfloat16, attn_implementation="flash_attention_2", device_map="auto"
-            )
 
             # We recommend enabling flash_attention_2 for better acceleration and memory saving, especially in multi-image and video scenarios.
             # model = Qwen2VLForConditionalGeneration.from_pretrained(
@@ -149,8 +149,8 @@ async def stat(message: types.Message, state: FSMContext, bot: Bot):
                 generated_ids_trimmed, skip_special_tokens=True, clean_up_tokenization_spaces=False
             )
             print(output_text)
-            print('txt =', type(txt))
-            print('output_text =', type(output_text))
+            #print('txt =', type(txt))
+            #print('output_text =', type(output_text))
             #await message.answer(txt)
             await message.answer(str(output_text[0]))
 
