@@ -90,8 +90,8 @@ async def stat(message: types.Message, state: FSMContext, bot: Bot):
         if status:
             txt = "Ответ давай всегда на русском языке. Что на изображении, дай отчет, ответь на русском языке, нужно отвечать очень подробно, описывая все детали\
 в дальнейшем твой отчет пойдет на оценку."
-            #if message.text != '':
-            #    txt = message.text
+            if message.text != '':
+                txt = message.text
             messages = [
                 {
                     "role": "user",
