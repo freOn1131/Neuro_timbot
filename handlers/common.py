@@ -45,35 +45,14 @@ async def reg1(message: types.Message, state: FSMContext):
 @router.message(Command("u1131"))
 async def update1(message: types.Message, state: FSMContext):
     os.system('/home/heural/GitHub/Neuro_timbot/update')
-    await message.answer('Go update yourself')
+    await message.answer('Go update yourself first! iam ok')
 
 @router.message(F.text == 'чотут')
 @router.message(F.photo)
 #@router.message(Command("start"))
 async def stat(message: types.Message, state: FSMContext, bot: Bot):
     try:
-        # default: Load the model on the available device(s)
-        model = Qwen2VLForConditionalGeneration.from_pretrained(
-            "Qwen/Qwen2-VL-7B-Instruct", torch_dtype=torch.bfloat16, attn_implementation="flash_attention_2", device_map="auto"
-        )
-
-        # We recommend enabling flash_attention_2 for better acceleration and memory saving, especially in multi-image and video scenarios.
-        # model = Qwen2VLForConditionalGeneration.from_pretrained(
-        #     "Qwen/Qwen2-VL-7B-Instruct",
-        #     torch_dtype=torch.bfloat16,
-        #     attn_implementation="flash_attention_2",
-        #     device_map="auto",
-        # )
-
-        # default processer
-        processor = AutoProcessor.from_pretrained("Qwen/Qwen2-VL-7B-Instruct")
-
-        # The default range for the number of visual tokens per image in the model is 4-16384. You can set min_pixels and max_pixels according to your needs, such as a token count range of 256-1280, to balance speed and memory usage.
-        # min_pixels = 256*28*28
-        # max_pixels = 1280*28*28
-        # processor = AutoProcessor.from_pretrained("Qwen/Qwen2-VL-7B-Instruct", min_pixels=min_pixels, max_pixels=max_pixels)
-
-        filepath = './GitHub/Neuro_timbot/in/'
+        filepath = '~/GitHub/Neuro_timbot/in/'
         if not os.path.exists(filepath): 
             os.makedirs(filepath) 
 
@@ -123,6 +102,27 @@ async def stat(message: types.Message, state: FSMContext, bot: Bot):
                     ],
                 }
             ]
+
+                # default: Load the model on the available device(s)
+            model = Qwen2VLForConditionalGeneration.from_pretrained(
+                "Qwen/Qwen2-VL-7B-Instruct", torch_dtype=torch.bfloat16, attn_implementation="flash_attention_2", device_map="auto"
+            )
+
+            # We recommend enabling flash_attention_2 for better acceleration and memory saving, especially in multi-image and video scenarios.
+            # model = Qwen2VLForConditionalGeneration.from_pretrained(
+            #     "Qwen/Qwen2-VL-7B-Instruct",
+            #     torch_dtype=torch.bfloat16,
+            #     attn_implementation="flash_attention_2",
+            #     device_map="auto",
+            # )
+
+            # default processer
+            processor = AutoProcessor.from_pretrained("Qwen/Qwen2-VL-7B-Instruct")
+
+            # The default range for the number of visual tokens per image in the model is 4-16384. You can set min_pixels and max_pixels according to your needs, such as a token count range of 256-1280, to balance speed and memory usage.
+            # min_pixels = 256*28*28
+            # max_pixels = 1280*28*28
+            # processor = AutoProcessor.from_pretrained("Qwen/Qwen2-VL-7B-Instruct", min_pixels=min_pixels, max_pixels=max_pixels)
 
             # Preparation for inference
             text = processor.apply_chat_template(
