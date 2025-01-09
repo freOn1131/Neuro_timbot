@@ -34,6 +34,40 @@ for item in ('Назад',):
     back.add(types.KeyboardButton(text=item))
 back.adjust(1)
 
+
+# открываем файл с базой данных
+bdfile = Path(pathlib.Path.home(), 'GitHub', 'Neuro_timbot', 'neuro_timbot.db')
+con = sl.connect(bdfile, check_same_thread=False)
+cur = con.cursor()
+
+cur.execute("""CREATE TABLE IF NOT EXISTS parameters(
+    id INTEGER primary key AUTOINCREMENT,
+    param TEXT,
+    value TEXT,
+    default_ TEXT,
+    mark TEXT);
+""")
+con.commit()
+
+if cur.execute('SELECT * FROM parameters WHERE param = ?', ('sys_promt'),).fetchone() != []:
+    sys_promt = 'Ты большая и умная языковая модель, твоя цель - помогать и отвечать, ответ давай всегда на русском языке. \
+    Что на изображении, дай отчет, ответь на русском языке'
+
+    cur.execute('INSERT INTO parameters (param, value, default_, mark) VALUES(?, ?, ?, ?)', 
+                ('sys_promt', sys_promt, sys_promt, ''))
+    
+    promt = 'нужно отвечать очень подробно, описывая все детали, в дальнейшем твой отчет пойдет на оценку.'
+    cur.execute('INSERT INTO parameters (param, value, default_, mark) VALUES(?, ?, ?, ?)', 
+                ('promt', promt, promt, ''))
+    
+    con.commit()
+
+
+
+#################################
+###### L O A D # M O D E L ######
+#################################
+
 # default: Load the model on the available device(s)
 model = Qwen2VLForConditionalGeneration.from_pretrained(
     "Qwen/Qwen2-VL-7B-Instruct", torch_dtype=torch.bfloat16, attn_implementation="flash_attention_2", device_map="auto")
@@ -86,34 +120,6 @@ def wat(filename, txt, max_new_tokens_input = 128):
     )
     return output_text
     
-
-# открываем файл с базой данных
-bdfile = Path(pathlib.Path.home(), 'GitHub', 'Neuro_timbot', 'neuro_timbot.db')
-con = sl.connect(bdfile, check_same_thread=False)
-cur = con.cursor()
-
-cur.execute("""CREATE TABLE IF NOT EXISTS parameters(
-    id INTEGER primary key AUTOINCREMENT,
-    param TEXT,
-    value TEXT,
-    default_ TEXT,
-    mark TEXT);
-""")
-con.commit()
-
-if cur.execute('SELECT * FROM parametrs WHERE param = ?', ('sys_promt'),).fetchone() != []:
-    sys_promt = 'Ты большая и умная языковая модель, твоя цель - помогать и отвечать, ответ давай всегда на русском языке. \
-    Что на изображении, дай отчет, ответь на русском языке'
-
-    cur.execute('INSERT INTO parameters (param, value, default_, mark) VALUES(?, ?, ?, ?)', 
-                ('sys_promt', sys_promt, sys_promt, ''))
-    
-    promt = 'нужно отвечать очень подробно, описывая все детали, в дальнейшем твой отчет пойдет на оценку.'
-    cur.execute('INSERT INTO parameters (param, value, default_, mark) VALUES(?, ?, ?, ?)', 
-                ('promt', promt, promt, ''))
-    
-    con.commit()
-
 @router.message(Command("r1131"))
 async def reg1(message: types.Message, state: FSMContext):
     await message.answer('Всёпака!')
