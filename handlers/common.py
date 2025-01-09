@@ -39,7 +39,7 @@ model = Qwen2VLForConditionalGeneration.from_pretrained(
     "Qwen/Qwen2-VL-7B-Instruct", torch_dtype=torch.bfloat16, attn_implementation="flash_attention_2", device_map="auto")
 
 
-def wat(filename, txt):
+def wat(filename, txt, max_new_tokens_input = 128):
     filepath = '~/GitHub/Neuro_timbot/in/'
     messages = [
         {
@@ -77,7 +77,7 @@ def wat(filename, txt):
     inputs = inputs.to("cuda")
 
     # Inference: Generation of the output
-    generated_ids = model.generate(**inputs, max_new_tokens=128)
+    generated_ids = model.generate(**inputs, max_new_tokens=max_new_tokens_input)
     generated_ids_trimmed = [
         out_ids[len(in_ids) :] for in_ids, out_ids in zip(inputs.input_ids, generated_ids)
     ]
@@ -143,7 +143,7 @@ async def stat(message: types.Message, state: FSMContext, bot: Bot):
             txt = "Ответ давай всегда на русском языке. Что на изображении, дай отчет, ответь на русском языке, нужно отвечать очень подробно, описывая все детали\
 в дальнейшем твой отчет пойдет на оценку."
             
-            answer = wat(filename, txt)
+            answer = wat(filename, txt, 512)
             print(answer)
             #print('txt =', type(txt))
             #print('output_text =', type(output_text))
