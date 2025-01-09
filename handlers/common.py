@@ -88,7 +88,7 @@ async def stat(message: types.Message, state: FSMContext, bot: Bot):
             await message.answer('Что-то не то с файлом')
             status = False
         if status:
-            txt = "Что на изображении? Ответ давай всегда на русском языке"
+            txt = "Ответ давай всегда на русском языке. Что на изображении?"
             if message.text != '':
                 txt = message.text
             messages = [
