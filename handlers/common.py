@@ -88,7 +88,7 @@ async def stat(message: types.Message, state: FSMContext, bot: Bot):
             await message.answer('Что-то не то с файлом')
             status = False
         if status:
-            txt = "Что на изображении? распиши в формате JSON"
+            txt = "Что на изображении? распиши в формате JSON. Ответ давай всегда на русском языке"
             if message.text != '':
                 txt = message.text
             messages = [
@@ -148,8 +148,10 @@ async def stat(message: types.Message, state: FSMContext, bot: Bot):
                 generated_ids_trimmed, skip_special_tokens=True, clean_up_tokenization_spaces=False
             )
             print(output_text)
-            await message.answer(txt)
-            await message.answer(output_text)
+            print('txt =', type(txt))
+            print('output_text =', type(output_text))
+            #await message.answer(txt)
+            await message.answer(str(output_text))
 
     except Exception as error: 
         await message.answer(f'{error}')
