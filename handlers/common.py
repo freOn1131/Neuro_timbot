@@ -70,9 +70,11 @@ if cur.execute('SELECT * FROM parameters WHERE param = ?', ('sys_promt',)).fetch
 #################################
 
 # default: Load the model on the available device(s)
-model = Qwen2VLForConditionalGeneration.from_pretrained(
-    "Qwen/Qwen2-VL-7B-Instruct", torch_dtype=torch.bfloat16, attn_implementation="flash_attention_2", device_map="auto")
+#model = Qwen2VLForConditionalGeneration.from_pretrained(
+#    "Qwen/Qwen2-VL-7B-Instruct", torch_dtype=torch.bfloat16, attn_implementation="flash_attention_2", device_map="auto")
 
+model = Qwen2VLForConditionalGeneration.from_pretrained(
+    "Qwen/Qwen2.5-VL-32B-Instruct", torch_dtype=torch.bfloat16, attn_implementation="flash_attention_2", device_map="auto")
 
 def wat(filename, txt, max_new_tokens_input = 128):
     filepath = '~/GitHub/Neuro_timbot/in/'
@@ -89,7 +91,9 @@ def wat(filename, txt, max_new_tokens_input = 128):
         }
     ]
     # default processer
-    processor = AutoProcessor.from_pretrained("Qwen/Qwen2-VL-7B-Instruct")
+    #processor = AutoProcessor.from_pretrained("Qwen/Qwen2-VL-7B-Instruct")
+    processor = AutoProcessor.from_pretrained("Qwen/Qwen2.5-VL-32B-Instruct")
+
 
     # The default range for the number of visual tokens per image in the model is 4-16384. 
     # You can set min_pixels and max_pixels according to your needs, such as a token count range of 256-1280, to balance speed and memory usage.
