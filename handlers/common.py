@@ -73,7 +73,7 @@ if cur.execute('SELECT * FROM parameters WHERE param = ?', ('sys_promt',)).fetch
 #model = Qwen2VLForConditionalGeneration.from_pretrained(
 #    "Qwen/Qwen2-VL-7B-Instruct", torch_dtype=torch.bfloat16, attn_implementation="flash_attention_2", device_map="auto")
 
-model_name = 'Qwen2.5-VL-32B-Instruct-bnb-4bit'
+model_name = '~/Qwen2.5-VL-32B-Instruct-bnb-4bit'
 
 model = Qwen2VLForConditionalGeneration.from_pretrained(
     model_name, torch_dtype=torch.bfloat16, attn_implementation="flash_attention_2", device_map="auto")
