@@ -15,7 +15,10 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder, CallbackData
 import pathlib
 from pathlib import Path
 import torch
-from transformers import Qwen2VLForConditionalGeneration, AutoTokenizer, AutoProcessor
+#from transformers import Qwen2VLForConditionalGeneration, AutoTokenizer, AutoProcessor
+#from qwen_vl_utils import process_vision_info
+
+from transformers import Qwen2_5_VLForConditionalGeneration, AutoTokenizer, AutoProcessor
 from qwen_vl_utils import process_vision_info
 
 router = Router()
@@ -74,10 +77,10 @@ if cur.execute('SELECT * FROM parameters WHERE param = ?', ('sys_promt',)).fetch
 #    "Qwen/Qwen2-VL-7B-Instruct", torch_dtype=torch.bfloat16, attn_implementation="flash_attention_2", device_map="auto")
 
 #model_name = '~/Qwen2.5-VL-32B-Instruct-bnb-4bit'
-#model_name = os.path.expanduser('~/Qwen2.5-VL-32B-Instruct-bnb-4bit')
-model_name = os.path.expanduser('~/Qwen2-VL-7B-Instruct')
+model_name = os.path.expanduser('~/Qwen2.5-VL-32B-Instruct-bnb-4bit')
+#model_name = os.path.expanduser('~/Qwen2-VL-7B-Instruct')
 
-model = Qwen2VLForConditionalGeneration.from_pretrained(
+model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
     model_name, torch_dtype=torch.bfloat16, attn_implementation="flash_attention_2", device_map="auto")
 
 def wat(filename, txt, max_new_tokens_input = 128):
