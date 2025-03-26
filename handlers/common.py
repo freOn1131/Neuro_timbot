@@ -20,6 +20,7 @@ import torch
 
 from transformers import Qwen2_5_VLForConditionalGeneration, AutoTokenizer, AutoProcessor
 from qwen_vl_utils import process_vision_info
+from transformers.utils import shard_checkpoint
 
 router = Router()
 
