@@ -187,7 +187,7 @@ async def stat(message: types.Message, state: FSMContext, bot: Bot):
 
             txt = txt_sys + txt_promt
             
-            answer = wat(filename, txt, 512)
+            answer = wat(filename, txt, 2048)
             print(answer)
             #print('txt =', type(txt))
             #print('output_text =', type(output_text))
