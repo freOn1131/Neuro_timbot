@@ -104,7 +104,7 @@ def wat_audio(filepath, max_new_tokens_input = 1024):
 
     def renamefile(filepath):
         #filepath = '~/GitHub/Neuro_timbot/in/123.wav'
-        return filepath.split('.')[0] + '_answer' + filepath.split('.')[1]
+        return filepath.split('.')[0] + '_answer.' + filepath.split('.')[1]
 
     sf.write(
         renamefile(filepath),
