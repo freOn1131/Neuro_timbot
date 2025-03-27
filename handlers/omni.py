@@ -154,6 +154,7 @@ async def handle_voice(message: Message, bot: Bot):
         await message.answer(f"Произошла ошибка при конвертации: {str(e)}")
 
     ogg_file_path_output = wat_audio(wav_file_path)
+    print(f'{ogg_file_path_output=}')
 
     try:
         await message.answer_voice(
