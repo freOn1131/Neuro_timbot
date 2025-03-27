@@ -149,7 +149,7 @@ async def handle_voice(message: Message, bot: Bot):
     try:
         audio = AudioSegment.from_ogg(ogg_file_path)  # Загружаем .ogg файл
         audio.export(wav_file_path, format="wav")     # Экспортируем в .wav
-        await message.answer(f"Голосовое сообщение успешно конвертировано в WAV!\nПуть к файлу:\n{wav_file_path}")
+        #await message.answer(f"Голосовое сообщение успешно конвертировано в WAV!\nПуть к файлу:\n{wav_file_path}")
     except Exception as e:
         await message.answer(f"Произошла ошибка при конвертации: {str(e)}")
 
