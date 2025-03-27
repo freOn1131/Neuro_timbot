@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from environs import Env
 import sqlite3 as sl
 from aiogram import Bot, Dispatcher
-from handlers import common
+from handlers import omni#, common
 import pathlib
 from pathlib import Path
 
@@ -77,7 +77,7 @@ async def main():
     dp = Dispatcher()
     bot = Bot(token=config.tg_bot.token)
 
-    dp.include_router(common.router)
+    dp.include_router(omni.router)
 
     await dp.start_polling(bot)
 
