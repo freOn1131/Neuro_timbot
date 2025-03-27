@@ -112,7 +112,7 @@ def wat_audio(filepath, max_new_tokens_input = 1024):
         audio.reshape(-1).detach().cpu().numpy(),
         samplerate=24000,
     )
-    return output
+    return output, text
     
 @router.message(Command("r1131"))
 async def reg1(message: types.Message, state: FSMContext):
@@ -153,14 +153,15 @@ async def handle_voice(message: Message, bot: Bot):
     except Exception as e:
         await message.answer(f"Произошла ошибка при конвертации: {str(e)}")
 
-    ogg_file_path_output = wat_audio(wav_file_path)
+    ogg_file_path_output, text = wat_audio(wav_file_path)
     print(f'{ogg_file_path_output=}')
+    await message.answer(f"{text}")
 
     try:
         await message.answer_voice(
             voice=FSInputFile(ogg_file_path_output)  # Отправляем файл как голосовое сообщение
         )
-        await message.answer("Ваше голосовое сообщение отправлено обратно!")
+        #await message.answer("Ваше голосовое сообщение отправлено обратно!")
     except Exception as e:
         await message.answer(f"Произошла ошибка при отправке: {str(e)}")
 
