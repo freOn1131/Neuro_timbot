@@ -15,6 +15,7 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder, CallbackData
 import pathlib
 from pathlib import Path
 import torch
+from pydub import AudioSegment  # Для работы с аудио
 
 from transformers import Qwen2_5_VLForConditionalGeneration, AutoTokenizer, AutoProcessor
 from qwen_vl_utils import process_vision_info
@@ -71,23 +72,24 @@ model = Qwen2_5OmniModel.from_pretrained(
     model_name, torch_dtype="auto", attn_implementation="flash_attention_2", device_map="auto")
 
 #def wat(filename, txt, max_new_tokens_input = 1024):
-def wat(max_new_tokens_input = 1024):
-    filepath = '~/GitHub/Neuro_timbot/in/'
-    # default processer
-    #processor = AutoProcessor.from_pretrained(model_name)
-    processor = Qwen2_5OmniProcessor.from_pretrained("Qwen/Qwen2.5-Omni-7B")
+def wat_audio(filepath, max_new_tokens_input = 1024):
+
+    processor = Qwen2_5OmniProcessor.from_pretrained(model_name)
+
+    # Conversation with audio only
     conversation = [
         {
             "role": "system",
-            "content": "Вы - виртуальный человек, разработанный командой Pup, способный воспринимать слуховые и визуальные сигналы, а также генерировать текст и речь.",
+            "content": "You are Qwen, a virtual human developed by the Qwen Team, Alibaba Group, capable of perceiving auditory and visual inputs, as well as generating text and speech.",
         },
         {
             "role": "user",
             "content": [
-                {"type": "video", "video": "https://qianwen-res.oss-cn-beijing.aliyuncs.com/Qwen2.5-Omni/draw.mp4"},
-            ],
-        },
+                {"type": "audio", "audio": filepath},
+            ]
+        }
     ]
+
     # Preparation for inference
     text = processor.apply_chat_template(conversation, add_generation_prompt=True, tokenize=False)
     audios, images, videos = process_mm_info(conversation, use_audio_in_video=True)
@@ -100,13 +102,17 @@ def wat(max_new_tokens_input = 1024):
     text = processor.batch_decode(text_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)
     print(text)
 
+    def renamefile(filepath):
+        #filepath = '~/GitHub/Neuro_timbot/in/123.wav'
+        return filepath.split('.')[0] + '_answer' + filepath.split('.')[1]
+
     sf.write(
-        "output.wav",
+        renamefile(filepath),
         audio.reshape(-1).detach().cpu().numpy(),
         samplerate=24000,
     )
 
-    return text
+    return filepath
     
 @router.message(Command("r1131"))
 async def reg1(message: types.Message, state: FSMContext):
@@ -118,9 +124,44 @@ async def update1(message: types.Message, state: FSMContext):
     os.system('/home/heural/GitHub/Neuro_timbot/update')
     await message.answer('Go update yourself first! iam ok')
 
-@router.message(F.text == 'Тест')
-async def stat(message: types.Message, state: FSMContext, bot: Bot):
-    wat()
+@router.message(F.voice)
+async def handle_voice(message: Message, bot: Bot):
+    # Папка для сохранения голосовых сообщений
+    VOICE_DIR = '~/GitHub/Neuro_timbot/in/'
+    os.makedirs(VOICE_DIR, exist_ok=True)
+
+    voice = message.voice
+    file_id = voice.file_id
+
+    # Формируем путь для сохранения файла
+    file_path = os.path.join(VOICE_DIR, f"{file_id}.ogg")
+    
+    # Скачиваем файл
+    await bot.download(
+        file_id,
+        destination=file_path
+    )
+
+    # Формируем пути для сохранения файлов
+    ogg_file_path = os.path.join(VOICE_DIR, f"{file_id}.ogg")
+    wav_file_path = os.path.join(VOICE_DIR, f"{file_id}.wav")
+
+    try:
+        audio = AudioSegment.from_ogg(ogg_file_path)  # Загружаем .ogg файл
+        audio.export(wav_file_path, format="wav")     # Экспортируем в .wav
+        await message.answer(f"Голосовое сообщение успешно конвертировано в WAV!\nПуть к файлу:\n{os.path.abspath(wav_file_path)}")
+    except Exception as e:
+        await message.answer(f"Произошла ошибка при конвертации: {str(e)}")
+
+    ogg_file_path_output = wat_audio(wav_file_path)
+
+    try:
+        await message.answer_voice(
+            voice=FSInputFile(ogg_file_path_output)  # Отправляем файл как голосовое сообщение
+        )
+        await message.answer("Ваше голосовое сообщение отправлено обратно!")
+    except Exception as e:
+        await message.answer(f"Произошла ошибка при отправке: {str(e)}")
 
 @router.message(F.photo)
 #@router.message(Command("start"))
