@@ -106,13 +106,13 @@ def wat_audio(filepath, max_new_tokens_input = 1024):
         #filepath = '~/GitHub/Neuro_timbot/in/123.wav'
         return filepath.split('.')[0] + '_answer.' + filepath.split('.')[1]
 
+    output = renamefile(filepath)
     sf.write(
-        renamefile(filepath),
+        output,
         audio.reshape(-1).detach().cpu().numpy(),
         samplerate=24000,
     )
-
-    return filepath
+    return output
     
 @router.message(Command("r1131"))
 async def reg1(message: types.Message, state: FSMContext):
