@@ -118,7 +118,7 @@ async def update1(message: types.Message, state: FSMContext):
     os.system('/home/heural/GitHub/Neuro_timbot/update')
     await message.answer('Go update yourself first! iam ok')
 
-@router.message(Command("test"))
+@router.message(F.text == 'Тест')
 async def stat(message: types.Message, state: FSMContext, bot: Bot):
     wat()
 
