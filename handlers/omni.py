@@ -68,7 +68,7 @@ con.commit()
 model_name = os.path.expanduser('~/Qwen2.5-Omni-7B')
 
 model = Qwen2_5OmniModel.from_pretrained(
-    model_name, torch_dtype=torch.bfloat16, attn_implementation="flash_attention_2", device_map="auto", torch_dtype="auto")
+    model_name, torch_dtype="auto", attn_implementation="flash_attention_2", device_map="auto")
 
 #def wat(filename, txt, max_new_tokens_input = 1024):
 def wat(max_new_tokens_input = 1024):
