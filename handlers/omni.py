@@ -146,7 +146,7 @@ def wat_text(txt, max_new_tokens_input = 1024):
     text_ids, audio = model.generate(**inputs, use_audio_in_video=True)
 
     text = processor.batch_decode(text_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)
-    print(text)
+    #print(text)
 
     return text
     
@@ -273,4 +273,5 @@ async def back(message: types.Message, state: FSMContext):
 async def back(message: types.Message, state: FSMContext):
     txt = message.text
     text_out = wat_text(txt, 16000)
-    await message.answer(text_out)
+    print(type(text_out), text_out)
+    #await message.answer(text_out)
