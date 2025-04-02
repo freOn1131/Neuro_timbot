@@ -272,6 +272,6 @@ async def back(message: types.Message, state: FSMContext):
 @router.message(root_.text)
 async def back(message: types.Message, state: FSMContext):
     txt = message.text
-    text_out = wat_text(txt, 16000)
-    print(type(text_out), text_out)
-    #await message.answer(text_out)
+    text_out = wat_text(txt, 128000)
+    print(text_out)
+    await message.answer(str(text_out[0]))
