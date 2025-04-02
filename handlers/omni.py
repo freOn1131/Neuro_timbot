@@ -274,4 +274,11 @@ async def back(message: types.Message, state: FSMContext):
     txt = message.text
     text_out = wat_text(txt, 128000)
     print(text_out)
-    await message.answer(str(text_out[0]))
+    out_text = str(text_out[0])
+    try:
+        await message.answer(out_text)
+    except:
+        if len(out_text) > 4000:
+            await message.answer(out_text[:4000])
+            await message.answer(out_text[4000:8000])
+            await message.answer(out_text[8000:12000])
