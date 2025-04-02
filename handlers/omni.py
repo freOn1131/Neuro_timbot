@@ -27,6 +27,10 @@ from qwen_omni_utils import process_mm_info
 
 router = Router()
 
+class root_(StatesGroup):
+    text = State()
+
+
 def restart():
         import sys
         print("argv was",sys.argv)
@@ -113,6 +117,38 @@ def wat_audio(filepath, max_new_tokens_input = 1024):
         samplerate=24000,
     )
     return output, text
+
+def wat_text(txt, max_new_tokens_input = 1024):
+
+    processor = Qwen2_5OmniProcessor.from_pretrained(model_name)
+
+    # Conversation with audio only
+    conversation = [
+        {
+            "role": "system",
+            "content": "You are Qwen, a virtual human developed by the Qwen Team, Alibaba Group, capable of perceiving auditory and visual inputs, as well as generating text and speech.",
+        },
+        {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": txt},
+            ]
+        }
+    ]
+
+    # Preparation for inference
+    text = processor.apply_chat_template(conversation, add_generation_prompt=True, tokenize=False)
+    audios, images, videos = process_mm_info(conversation, use_audio_in_video=True)
+    inputs = processor(text=text, audios=audios, images=images, videos=videos, return_tensors="pt", padding=True)
+    inputs = inputs.to(model.device).to(model.dtype)
+
+    # Inference: Generation of the output text and audio
+    text_ids, audio = model.generate(**inputs, use_audio_in_video=True)
+
+    text = processor.batch_decode(text_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)
+    print(text)
+
+    return text
     
 @router.message(Command("r1131"))
 async def reg1(message: types.Message, state: FSMContext):
@@ -230,4 +266,11 @@ async def stat(message: types.Message, state: FSMContext, bot: Bot):
 @router.message(F.text == 'Промт')
 @router.message(Command("промт"))
 async def back(message: types.Message, state: FSMContext):
-    pass
+    await state.set_state(root_.text)
+    await message.answer('Давай текст промта')
+
+@router.message(root_.text)
+async def back(message: types.Message, state: FSMContext):
+    txt = message.text
+    text_out = wat_text(txt, 16000)
+    await message.answer(text_out)
